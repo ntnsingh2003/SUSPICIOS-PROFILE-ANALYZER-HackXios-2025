@@ -96,7 +96,33 @@ Every risk score is traceable to specific, understandable factors. Users see exa
 
 ## Getting Started
 
+### Local Development
+
+**Backend (FastAPI)**:
+```bash
+cd backend
+pip install -r requirements.txt
+python main.py
+# Server runs on http://localhost:8000
+```
+
+**Frontend (React)**:
+```bash
+cd frontend
+npm install
+npm start
+# App runs on http://localhost:3000
+```
+
+### Live Demo
+
+🌐 **Deployed on Vercel**: [suspicious-profile-analyzer.vercel.app](https://suspicious-profile-analyzer.vercel.app)
+
 The system demonstrates explainable cybersecurity AI with complete transparency in decision-making. Every risk assessment includes specific reasons and actionable recommendations, making it suitable for both end-user protection and platform operator compliance needs.
+
+### Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions on Vercel.
 
 ---
 

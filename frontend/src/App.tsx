@@ -82,7 +82,11 @@ const App: React.FC = () => {
   // Load demo data
   const loadDemoData = async (type: 'legitimate' | 'suspicious' | 'romance_scam') => {
     try {
-      const response = await fetch('http://localhost:8000/demo-data');
+      const apiUrl = process.env.NODE_ENV === 'production' 
+        ? '/api/demo-data' 
+        : 'http://localhost:8000/demo-data';
+      
+      const response = await fetch(apiUrl);
       
       if (!response.ok) {
         throw new Error('Failed to fetch demo data');
@@ -143,7 +147,11 @@ const App: React.FC = () => {
         messages: filteredMessages
       };
 
-      const response = await fetch('http://localhost:8000/analyze-profile', {
+      const apiUrl = process.env.NODE_ENV === 'production' 
+        ? '/api/analyze-profile' 
+        : 'http://localhost:8000/analyze-profile';
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
