@@ -1,10 +1,10 @@
 """
-Suspicious Profile Analyzer - Ultra-Minimal FastAPI Backend
-Zero compilation dependencies - guaranteed to work on any Python version
+Suspicious Profile Analyzer - Pure Flask Backend
+Zero compilation dependencies - guaranteed to work on any platform
 """
 
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import re
 import logging
 from typing import List, Dict, Any
@@ -13,26 +13,14 @@ from typing import List, Dict, Any
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(
-    title="Suspicious Profile Analyzer",
-    description="Explainable AI system for detecting fake and malicious online profiles",
-    version="1.0.0"
-)
-
-# Enable CORS for frontend integration
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for simplicity
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # Lightweight Threat Detection Engine
 class ThreatDetectionEngine:
     """
     Ultra-lightweight threat detection using pure Python
-    No dependencies beyond standard library
+    No dependencies beyond Flask
     """
     
     # Financial scam keywords (high precision patterns)
@@ -252,30 +240,35 @@ class ThreatDetectionEngine:
 # Initialize global threat detection engine
 threat_detector = ThreatDetectionEngine()
 
-@app.get("/")
-async def root():
+@app.route('/')
+def root():
     """Health check endpoint"""
-    return {
+    return jsonify({
         "message": "Suspicious Profile Analyzer API",
         "status": "operational",
         "version": "1.0.0"
-    }
+    })
 
-@app.post("/analyze-profile")
-async def analyze_profile(profile: Dict[str, Any]):
+@app.route('/analyze-profile', methods=['POST'])
+def analyze_profile():
     """
     Analyze a profile for suspicious characteristics
     """
     try:
+        profile = request.get_json()
+        
+        if not profile:
+            return jsonify({"error": "No profile data provided"}), 400
+        
         logger.info(f"Analyzing profile for security threats: age={profile.get('account_age_days')} days, followers={profile.get('followers')}")
         
         # Validate input
         if profile.get('account_age_days', 0) < 0:
-            raise HTTPException(status_code=400, detail="Account age cannot be negative")
+            return jsonify({"error": "Account age cannot be negative"}), 400
         
         messages = profile.get('messages', [])
         if len(messages) == 0:
-            raise HTTPException(status_code=400, detail="At least one message is required for threat analysis")
+            return jsonify({"error": "At least one message is required for threat analysis"}), 400
         
         # Perform security threat assessment
         logger.info("Step 1: Analyzing profile metadata for identity inconsistencies...")
@@ -285,16 +278,16 @@ async def analyze_profile(profile: Dict[str, Any]):
         assessment = threat_detector.calculate_risk_score(profile)
         
         logger.info(f"Threat assessment complete: {assessment['risk_level']} ({assessment['risk_score']}/100)")
-        return assessment
+        return jsonify(assessment)
         
     except Exception as e:
         logger.error(f"Error analyzing profile: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+        return jsonify({"error": f"Analysis failed: {str(e)}"}), 500
 
-@app.get("/demo-data")
-async def get_demo_data():
+@app.route('/demo-data')
+def get_demo_data():
     """Provide sample test data for demo purposes"""
-    return {
+    return jsonify({
         "legitimate_profile": {
             "account_age_days": 365,
             "followers": 250,
@@ -330,13 +323,9 @@ async def get_demo_data():
                 "Trust me honey, send Western Union transfer immediately."
             ]
         }
-    }
+    })
 
 if __name__ == "__main__":
-    import uvicorn
     import os
     port = int(os.environ.get("PORT", 8000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
-
-# For gunicorn deployment
-application = app
+    app.run(host="0.0.0.0", port=port, debug=False)
