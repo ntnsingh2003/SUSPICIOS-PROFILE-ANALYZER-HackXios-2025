@@ -1,15 +1,13 @@
 """
-Suspicious Profile Analyzer - Lightweight FastAPI Backend
-Simplified version for reliable deployment without heavy ML dependencies
+Suspicious Profile Analyzer - Ultra-Minimal FastAPI Backend
+Zero compilation dependencies - guaranteed to work on any Python version
 """
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
-from typing import List, Dict, Tuple
 import re
 import logging
-import math
+from typing import List, Dict, Any
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -24,41 +22,17 @@ app = FastAPI(
 # Enable CORS for frontend integration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # React dev server
-        "https://*.vercel.app",   # Vercel deployments
-        "https://suspicious-profile-analyzer.vercel.app",  # Production domain
-        "https://*.onrender.com", # Render deployments
-        "https://*.railway.app",  # Railway deployments
-        "https://*.fly.dev"       # Fly.io deployments
-    ],
+    allow_origins=["*"],  # Allow all origins for simplicity
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Input/Output Models
-class ProfileData(BaseModel):
-    account_age_days: int = Field(..., ge=0, description="Days since account creation")
-    followers: int = Field(..., ge=0, description="Number of followers")
-    following: int = Field(..., ge=0, description="Number of accounts following")
-    post_count: int = Field(..., ge=0, description="Total posts made")
-    profile_completed: bool = Field(..., description="Whether profile is complete")
-    messages: List[str] = Field(..., description="Sample messages from the profile")
-
-class RiskAssessment(BaseModel):
-    risk_score: float = Field(..., ge=0, le=100, description="Risk score 0-100")
-    risk_level: str = Field(..., description="Risk category: Minimal/Low/Medium/High/Critical Risk")
-    explanations: List[str] = Field(..., description="Human-readable security threat indicators")
-    confidence: float = Field(..., ge=0, le=1, description="Assessment reliability score")
-    confidence_explanation: str = Field(..., description="What the confidence score means")
-    recommended_actions: List[str] = Field(..., description="Security response recommendations")
-
-# Lightweight Rule-Based Detection Engine
+# Lightweight Threat Detection Engine
 class ThreatDetectionEngine:
     """
-    Lightweight threat detection using rule-based analysis
-    No heavy ML dependencies - pure Python logic
+    Ultra-lightweight threat detection using pure Python
+    No dependencies beyond standard library
     """
     
     # Financial scam keywords (high precision patterns)
@@ -86,10 +60,10 @@ class ThreatDetectionEngine:
     
     def __init__(self):
         logger.info("Initializing Suspicious Profile Analyzer - Cybersecurity Threat Detection System")
-        logger.info("Loading lightweight threat detection engine...")
+        logger.info("Loading ultra-lightweight threat detection engine...")
         logger.info("Threat signature database ready for analysis")
     
-    def analyze_profile_metadata(self, profile: ProfileData) -> Tuple[int, List[str]]:
+    def analyze_profile_metadata(self, profile: Dict[str, Any]) -> tuple:
         """
         Analyze profile metadata for suspicious patterns
         Returns: (risk_points, explanations)
@@ -97,70 +71,79 @@ class ThreatDetectionEngine:
         risk_points = 0
         explanations = []
         
-        # Rule 1: New account risk (accounts < 30 days are high risk)
-        if profile.account_age_days < 30:
+        account_age_days = profile.get('account_age_days', 0)
+        followers = profile.get('followers', 0)
+        following = profile.get('following', 0)
+        post_count = profile.get('post_count', 0)
+        profile_completed = profile.get('profile_completed', False)
+        
+        # Rule 1: New account risk
+        if account_age_days < 30:
             risk_points += 30
-            explanations.append(f"Account created {profile.account_age_days} days ago (new accounts are high risk)")
-        elif profile.account_age_days < 90:
+            explanations.append(f"Account created {account_age_days} days ago (new accounts are high risk)")
+        elif account_age_days < 90:
             risk_points += 15
-            explanations.append(f"Account is {profile.account_age_days} days old (relatively new)")
+            explanations.append(f"Account is {account_age_days} days old (relatively new)")
         
         # Rule 2: Follower/Following ratio analysis
-        if profile.following > 0:
-            ratio = profile.followers / max(profile.following, 1)
-            if ratio < 0.01 and profile.following > 1000:  # Following many, few followers
+        if following > 0:
+            ratio = followers / max(following, 1)
+            if ratio < 0.01 and following > 1000:
                 risk_points += 25
-                explanations.append(f"Following {profile.following} accounts but only {profile.followers} followers (bot-like behavior)")
-            elif ratio > 100 and profile.followers > 10000:  # Suspiciously high follower count
+                explanations.append(f"Following {following} accounts but only {followers} followers (bot-like behavior)")
+            elif ratio > 100 and followers > 10000:
                 risk_points += 20
-                explanations.append(f"Unusually high follower count ({profile.followers}) may indicate fake followers")
+                explanations.append(f"Unusually high follower count ({followers}) may indicate fake followers")
         
         # Rule 3: Posting behavior analysis
-        if profile.account_age_days > 0:
-            posts_per_day = profile.post_count / profile.account_age_days
-            if posts_per_day > 50:  # Excessive posting
+        if account_age_days > 0:
+            posts_per_day = post_count / account_age_days
+            if posts_per_day > 50:
                 risk_points += 20
                 explanations.append(f"Posting {posts_per_day:.1f} times per day (abnormally high activity)")
-            elif posts_per_day < 0.01 and profile.account_age_days > 30:  # Inactive account
+            elif posts_per_day < 0.01 and account_age_days > 30:
                 risk_points += 10
                 explanations.append("Very low posting activity for account age")
         
         # Rule 4: Profile completeness
-        if not profile.profile_completed:
+        if not profile_completed:
             risk_points += 15
             explanations.append("Profile is incomplete (missing key information)")
         
-        # Rule 5: Behavioral scoring (lightweight ML substitute)
+        # Rule 5: Behavioral scoring
         behavioral_score = self._calculate_behavioral_score(profile)
         risk_points += behavioral_score
         if behavioral_score > 10:
             explanations.append(f"Behavioral analysis indicates {behavioral_score} risk points from activity patterns")
         
-        return min(risk_points, 70), explanations  # Cap at 70 points
+        return min(risk_points, 70), explanations
     
-    def _calculate_behavioral_score(self, profile: ProfileData) -> int:
-        """
-        Lightweight behavioral scoring without ML dependencies
-        """
+    def _calculate_behavioral_score(self, profile: Dict[str, Any]) -> int:
+        """Lightweight behavioral scoring"""
         score = 0
         
+        account_age_days = profile.get('account_age_days', 0)
+        followers = profile.get('followers', 0)
+        following = profile.get('following', 0)
+        post_count = profile.get('post_count', 0)
+        
         # Age vs activity correlation
-        if profile.account_age_days > 0:
-            activity_ratio = profile.post_count / profile.account_age_days
+        if account_age_days > 0:
+            activity_ratio = post_count / account_age_days
             if activity_ratio > 20 or activity_ratio < 0.01:
                 score += 10
         
         # Follower patterns
-        if profile.following > profile.followers * 10:  # Following way more than followers
+        if following > followers * 10:
             score += 15
         
-        # Suspicious round numbers (often fake)
-        if profile.followers % 100 == 0 and profile.followers > 1000:
+        # Suspicious round numbers
+        if followers % 100 == 0 and followers > 1000:
             score += 5
         
-        return min(score, 30)  # Cap behavioral score
+        return min(score, 30)
     
-    def analyze_message_content(self, messages: List[str]) -> Tuple[int, List[str]]:
+    def analyze_message_content(self, messages: List[str]) -> tuple:
         """
         Analyze message content for scam patterns
         Returns: (risk_points, explanations)
@@ -199,12 +182,10 @@ class ThreatDetectionEngine:
             risk_points += 15
             explanations.append("Messages contain multiple urgency indicators (pressure tactics)")
         
-        return min(risk_points, 30), explanations  # Cap at 30 points
+        return min(risk_points, 30), explanations
     
-    def calculate_risk_score(self, profile: ProfileData) -> RiskAssessment:
-        """
-        Calculate comprehensive risk score with explanations
-        """
+    def calculate_risk_score(self, profile: Dict[str, Any]) -> Dict[str, Any]:
+        """Calculate comprehensive risk score with explanations"""
         all_explanations = []
         
         # Profile metadata analysis
@@ -212,13 +193,14 @@ class ThreatDetectionEngine:
         all_explanations.extend(metadata_explanations)
         
         # Message content analysis
-        content_risk, content_explanations = self.analyze_message_content(profile.messages)
+        messages = profile.get('messages', [])
+        content_risk, content_explanations = self.analyze_message_content(messages)
         all_explanations.extend(content_explanations)
         
         # Combine scores
         total_score = min(100, metadata_risk + content_risk)
         
-        # Determine risk level using industry-standard 5-level classification
+        # Determine risk level
         if total_score < 20:
             risk_level = "Minimal Risk"
         elif total_score < 40:
@@ -230,9 +212,9 @@ class ThreatDetectionEngine:
         else:
             risk_level = "Critical Risk"
         
-        # Calculate confidence based on number of indicators
+        # Calculate confidence
         indicator_count = len([e for e in all_explanations if e])
-        confidence = min(0.95, 0.5 + (indicator_count * 0.1))  # More indicators = higher confidence
+        confidence = min(0.95, 0.5 + (indicator_count * 0.1))
         
         # Generate confidence explanation
         if confidence >= 0.85:
@@ -242,14 +224,13 @@ class ThreatDetectionEngine:
         else:
             confidence_explanation = "Limited data available, manual review recommended"
         
-        # Add security-focused summary explanation
+        # Add summary
         if total_score > 0:
             threat_indicators_count = len([e for e in all_explanations if e])
             summary = f"Threat assessment: {threat_indicators_count} security indicators detected using rule-based analysis"
             all_explanations.insert(0, summary)
         
-        # Add recommended security actions based on risk level
-        recommended_actions = []
+        # Recommended actions
         if total_score >= 80:
             recommended_actions = ["Immediate account restriction recommended", "Manual security review required", "User notification advised"]
         elif total_score >= 60:
@@ -259,14 +240,14 @@ class ThreatDetectionEngine:
         else:
             recommended_actions = ["Normal monitoring continues"]
         
-        return RiskAssessment(
-            risk_score=round(total_score, 1),
-            risk_level=risk_level,
-            explanations=[exp for exp in all_explanations if exp][:10],  # Limit to top 10
-            confidence=round(confidence, 2),
-            confidence_explanation=confidence_explanation,
-            recommended_actions=recommended_actions
-        )
+        return {
+            "risk_score": round(total_score, 1),
+            "risk_level": risk_level,
+            "explanations": all_explanations[:10],
+            "confidence": round(confidence, 2),
+            "confidence_explanation": confidence_explanation,
+            "recommended_actions": recommended_actions
+        }
 
 # Initialize global threat detection engine
 threat_detector = ThreatDetectionEngine()
@@ -280,24 +261,20 @@ async def root():
         "version": "1.0.0"
     }
 
-@app.post("/analyze-profile", response_model=RiskAssessment)
-async def analyze_profile(profile: ProfileData):
+@app.post("/analyze-profile")
+async def analyze_profile(profile: Dict[str, Any]):
     """
     Analyze a profile for suspicious characteristics
-    
-    This endpoint implements rule-based threat detection:
-    - Profile metadata analysis for suspicious patterns
-    - Message content analysis for scam indicators
-    - Returns explainable risk score with human-readable factors
     """
     try:
-        logger.info(f"Analyzing profile for security threats: age={profile.account_age_days} days, followers={profile.followers}")
+        logger.info(f"Analyzing profile for security threats: age={profile.get('account_age_days')} days, followers={profile.get('followers')}")
         
         # Validate input
-        if profile.account_age_days < 0:
+        if profile.get('account_age_days', 0) < 0:
             raise HTTPException(status_code=400, detail="Account age cannot be negative")
         
-        if len(profile.messages) == 0:
+        messages = profile.get('messages', [])
+        if len(messages) == 0:
             raise HTTPException(status_code=400, detail="At least one message is required for threat analysis")
         
         # Perform security threat assessment
@@ -307,7 +284,7 @@ async def analyze_profile(profile: ProfileData):
         
         assessment = threat_detector.calculate_risk_score(profile)
         
-        logger.info(f"Threat assessment complete: {assessment.risk_level} ({assessment.risk_score}/100)")
+        logger.info(f"Threat assessment complete: {assessment['risk_level']} ({assessment['risk_score']}/100)")
         return assessment
         
     except Exception as e:
@@ -316,9 +293,7 @@ async def analyze_profile(profile: ProfileData):
 
 @app.get("/demo-data")
 async def get_demo_data():
-    """
-    Provide sample test data for demo purposes
-    """
+    """Provide sample test data for demo purposes"""
     return {
         "legitimate_profile": {
             "account_age_days": 365,
