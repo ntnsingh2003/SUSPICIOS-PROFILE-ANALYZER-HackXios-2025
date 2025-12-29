@@ -1,53 +1,30 @@
 # Deployment Guide: Suspicious Profile Analyzer
 
-## 🚀 Vercel Deployment
+## 🚀 Frontend-Only Vercel Deployment
 
-This project is configured for deployment on Vercel with both frontend (React) and backend (FastAPI) components.
+Due to ML dependencies exceeding Vercel's 250MB serverless limit, this project deploys the frontend on Vercel and requires a separate backend deployment.
 
-### Prerequisites
-
-1. **Vercel Account**: Sign up at [vercel.com](https://vercel.com)
-2. **GitHub Repository**: Push your code to GitHub
-3. **Vercel CLI** (optional): `npm install -g vercel`
-
-### Deployment Steps
-
-#### Option 1: Deploy via Vercel Dashboard (Recommended)
+### Vercel (Frontend Only)
 
 1. **Connect Repository**:
    - Go to [vercel.com/dashboard](https://vercel.com/dashboard)
-   - Click "New Project"
-   - Import your GitHub repository
-
-2. **Configure Project**:
-   - Framework Preset: "Other"
-   - Root Directory: `./` (leave empty)
+   - Click "New Project" → Import your GitHub repo
+   - Framework: "Create React App"
    - Build Command: `npm run build`
    - Output Directory: `frontend/build`
 
-3. **Environment Variables** (if needed):
-   - No environment variables required for basic deployment
+### Backend Deployment (Required Separately)
 
-4. **Deploy**:
-   - Click "Deploy"
-   - Vercel will automatically build and deploy your project
+**Recommended Platforms for ML Backend:**
+- **Render**: Free tier supports up to 512MB
+- **Railway**: Full ML stack support
+- **Fly.io**: Docker-based deployment
 
-#### Option 2: Deploy via CLI
-
-```bash
-# Install Vercel CLI
-npm install -g vercel
-
-# Login to Vercel
-vercel login
-
-# Deploy from project root
-vercel
-
-# Follow the prompts:
-# - Set up and deploy? Y
-# - Which scope? (select your account)
-# - Link to existing project? N
+**Backend Setup (Render Example)**:
+1. Create Web Service on Render
+2. Build Command: `pip install -r requirements.txt`
+3. Start Command: `cd backend && python main.py`
+4. Update frontend API URLs to backend domain
 # - Project name: suspicious-profile-analyzer
 # - Directory: ./
 # - Override settings? N
